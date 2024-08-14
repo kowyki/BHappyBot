@@ -4,6 +4,8 @@ from telebot import TeleBot
 
 from .handlers.main import *
 
+#TODO: переписать логику отправки поздравлений так чтобы алгоритм сверялся с датой ежедневно
+
 def start_bot():
     load_dotenv()
     global bot
