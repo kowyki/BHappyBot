@@ -26,5 +26,5 @@ def print_id(message, bot):
     print(f"Chat ID этого чата: {chat_id}\nИ message_thread_id: {msg_thread_id}")
 
 def register_handlers():
-    bot.register_message_handler(commands_handler_admin, commands=['start', 'month_list' 'list', 'add', 'remove', 'table_init'], pass_bot=True)
+    bot.register_message_handler(commands_handler_admin, commands=['start', 'month_list', 'list', 'add', 'remove', 'remove_all','table_init'], pass_bot=True)
     bot.register_message_handler(print_id, commands=['id'], pass_bot=True)

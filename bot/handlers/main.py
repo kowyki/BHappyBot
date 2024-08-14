@@ -57,7 +57,7 @@ def commands_handler_admin(message: Message, bot: TeleBot):
 
         case '/remove':
             bot.send_message(message.from_user.id, 'Введите id пользователя, которого необходимо удалить')
-            bot.register_next_step_handler(message, remove_user)
+            bot.register_next_step_handler(message, remove_user, bot)
 
         case '/remove_all':
             remove_all()

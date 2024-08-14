@@ -64,11 +64,14 @@ def add_users_from_table(table, bot):
         start_timer(delta.total_seconds(), bot, user_tag)
         # start_timer(5, bot, user_tag)
 
-def remove_user(message):
+def remove_user(message, bot):
     user_tag = message.text
-    timers[user_tag].cancel()
-    del timers[user_tag]
-    del user_data[user_tag]
+    try:
+        timers[user_tag].cancel()
+        del timers[user_tag]
+        del user_data[user_tag]
+    except KeyError:
+        bot.send_message(message.from_user.id, 'Пользователя с таким id не существует')
 
 def remove_all():
     for user_tag in user_data:
