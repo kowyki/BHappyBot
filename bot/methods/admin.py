@@ -70,6 +70,12 @@ def remove_user(message):
     del timers[user_tag]
     del user_data[user_tag]
 
+def remove_all():
+    for user_tag in user_data:
+        timers[user_tag].cancel()
+        del timers[user_tag]
+        del user_data[user_tag]
+
 def start_timer(timer, bot, user_tag):
     timers[user_tag] = threading.Timer(timer, send_congrat, [bot, user_tag])
     timers[user_tag].start()

@@ -38,12 +38,10 @@ def commands_handler_admin(message: Message, bot: TeleBot):
 
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, f'{message.from_user.id}')
-            send_month_congrats(bot)
+            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/month_list - отправить сообщение об именинниках в этом месяце в чат \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/remove_all - удалить все данные \n/table_init - занести в список людей из таблицы')
 
-        case '/add':
-            bot.send_message(message.from_user.id, 'Введите тег пользователя и дату его рождения в формате: tag d.m')
-            bot.register_next_step_handler(message, add_user, bot)
+        case '/month_list':
+            send_month_congrats(bot)
 
         case '/list':
             ans = ''
@@ -53,9 +51,16 @@ def commands_handler_admin(message: Message, bot: TeleBot):
             splitted_message = util.smart_split(ans, chars_per_string=3700)
             bot.send_message(message.from_user.id, splitted_message)
 
+        case '/add':
+            bot.send_message(message.from_user.id, 'Введите тег пользователя и дату его рождения в формате: tag d.m')
+            bot.register_next_step_handler(message, add_user, bot)
+
         case '/remove':
             bot.send_message(message.from_user.id, 'Введите id пользователя, которого необходимо удалить')
             bot.register_next_step_handler(message, remove_user)
+
+        case '/remove_all':
+            remove_all()
 
         case '/table_init':
             bday_data = parse_from_table()
