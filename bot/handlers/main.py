@@ -23,10 +23,13 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
         case '/list':
             global user_data
             ans = ''
-            for user_tag, bdate in user_data.items():
-                ans += f'@{user_tag} {bdate[0]}.{bdate[1]}\n'
-            splitted_message = util.smart_split(ans, chars_per_string=3700)
-            bot.send_message(message.from_user.id, splitted_message)
+            if user_data == {}: 
+                bot.send_message(message.from_user.id, 'Пользователей нет')
+            else: 
+                for user_tag, bdate in user_data.items():
+                    ans += f'@{user_tag} {bdate[0]}.{bdate[1]}\n'
+                splitted_message = util.smart_split(ans, chars_per_string=3700)
+                bot.send_message(message.from_user.id, splitted_message)
 
         case '/add':
             bot.send_message(message.from_user.id, 'Введите тег пользователя и дату его рождения в формате: tag d.m')
@@ -38,30 +41,45 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
 
         case '/remove_all':
             user_data = {}
+            bot.send_message(message.from_user.id, 'Пользователи очищены')
 
         case '/table_init':
             bday_data = parse_from_table()
-            add_users_from_table(bday_data)
+            try: 
+                add_users_from_table(bday_data)
+                bot.send_message(message.from_user.id, 'Пользователи добавлены')
+            except:
+                bot.send_message(message.from_user.id, 'Произошла ошибка')
 
         case '/start_timer':
-            start_timer(bot)
+            try: 
+                start_timer(bot)
+            except:
+                bot.send_message(message.from_user.id, 'Произошла ошибка')
 
         case '/id':
-            print_id(message, bot)
+            try: 
+                print_id(message, bot)
+            except:
+                bot.send_message(message.from_user.id, 'Произошла ошибка')
 
 # Добавить пользователя
 def add_user(message: Message, bot: TeleBot) -> None:
-    user_tag, user_bday = message.text.split()
-    user_bday_day, user_bday_month = map(int, user_bday.split('.'))
-    user_data[user_tag] = (user_bday_day, user_bday_month)
+    try: 
+        user_tag, user_bday = message.text.split()
+        user_bday_day, user_bday_month = map(int, user_bday.split('.'))
+        user_data[user_tag] = (user_bday_day, user_bday_month)
 
-    bot.send_message(message.from_user.id, f'Пользователь @{user_tag} успешно добавлен')
+        bot.send_message(message.from_user.id, f'Пользователь @{user_tag} успешно добавлен')
+
+    except:
+        bot.send_message(message.from_user.id, f'Вы ввели данные в неверном формате')
+
 
 # Удалить пользователя
 def remove_user(message: Message, bot: TeleBot) -> None:
     user_tag = message.text
-    try:
-        del user_data[user_tag]
+    try: del user_data[user_tag]
     except KeyError:
         bot.send_message(message.from_user.id, 'Пользователя с таким id не существует')
 
