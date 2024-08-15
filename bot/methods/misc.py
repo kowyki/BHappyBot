@@ -9,8 +9,8 @@ def add_users_from_table(table:dict) -> None:
         user_data[user_tag] = (user_bday[0], user_bday[1])
 
 # Спарсить из таблицы данные о людях
-def parse_from_table() -> dict:
-    excel = pd.read_excel("format/suirBDay.xlsx", sheet_name="BDay", usecols=[2,4], parse_dates=[0])
+def parse_from_table(sheet='BDay') -> dict:
+    excel = pd.read_excel("files/table.xlsx", sheet_name=sheet, usecols=[2,4], parse_dates=[0])
 
     data_list = excel.to_dict(orient='records')
 
