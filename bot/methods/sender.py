@@ -32,11 +32,12 @@ def check_date(bot: TeleBot) -> None:
         for user_tag, bdate in user_data.items():
             if bdate[1] == today.month: msg.append((bdate[0], user_tag))
 
-        if msg == []: start_timer(bot, dt.timedelta(days=1).total_seconds())
-
-        msg.sort(key=lambda x: x[0])
-        to_send = 'В этом месяце день рождения у: \n'
-        for x in msg: to_send += f'{x[0]} @{x[1]}\n'
+        if msg == []: 
+            to_send = 'В этом месяце ни у кого нет дней рождения :('
+        else: 
+            msg.sort(key=lambda x: x[0])
+            to_send = 'В этом месяце день рождения у: \n'
+            for x in msg: to_send += f'{x[0]} @{x[1]}\n'
 
         bot.send_message(CHAT_ID, to_send, message_thread_id=THREAD_ID)
     
