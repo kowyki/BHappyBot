@@ -25,12 +25,12 @@ def start_timer(bot: TeleBot, seconds=None) -> None:
 
 # Проверка даты
 def check_date(bot: TeleBot) -> None:
-    today = dt.date.now()
+    today = dt.date.today()
     # Проверка на новый месяц 
     if today.day == 1:
         msg = []
         for user_tag, bdate in user_data.items():
-            if bdate[1] == today.month: msg.append((bdate.day, user_tag))
+            if bdate[1] == today.month: msg.append((bdate[0], user_tag))
 
         if msg == []: start_timer(bot, dt.timedelta(days=1).total_seconds())
 
