@@ -1,53 +1,30 @@
+import os
 import datetime as dt
+from dotenv import load_dotenv
 from telebot import TeleBot, util
 from telebot.types import Message
 
-from ..methods.admin import * 
-from format.table_format import *
+from ..data.user_data import *
+from ..methods.misc import * 
+from ..methods.sender import * 
 
 if 'admins_id' not in globals():
+    load_dotenv()
     admins_id = [os.getenv('ADMIN_ID_1'), os.getenv('ADMIN_ID_2')]
 
-def start_month_timer(bot):
-    if dt.date.today().month == 12:
-        next_month = dt.datetime.strptime(f'01.01.{dt.date.today().year+1} 9', '%d.%m.%Y %H')
-    else:
-        next_month = dt.datetime.strptime(f'01.{dt.date.today().month+1}.{dt.date.today().year} 9', '%d.%m.%Y %H')
-    delta = next_month - dt.datetime.today()
-
-    month_timer = threading.Timer(delta.total_seconds(), send_month_congrats, [bot])
-    month_timer.start()
-
-def send_month_congrats(bot):
-    msg = []
-    now_month = dt.date.today().month
-    for user_tag, bdate in user_data.items():
-        if bdate.month == now_month: msg.append((bdate.day, user_tag))
-
-    msg.sort(key=lambda x: x[0])
-    to_send = 'В этом месяце день рождения у: \n'
-    for x in msg: to_send += f'{x[0]} @{x[1]}\n'
-
-    bot.send_message(CHAT_ID, to_send, message_thread_id=THREAD_ID)
-    start_month_timer(bot)
-
-def commands_handler_admin(message: Message, bot: TeleBot):
-    if str(message.from_user.id) not in admins_id: 
-        # bot.send_message(message.from_user.id, 'Вы не являетесь администратором')
-        return
-
+# Обработчик комманд
+def commands_handler(message: Message, bot: TeleBot) -> None:
+    # Проверка на админа
+    if str(message.from_user.id) not in admins_id: return
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/month_list - отправить сообщение об именинниках в этом месяце в чат \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/remove_all - удалить все данные \n/table_init - занести в список людей из таблицы')
-
-        case '/month_list':
-            send_month_congrats(bot)
+            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/remove_all - удалить все данные \n/table_init - занести в список людей из таблицы \n/start_timer - запустить ежедневную проверку \n/id - вывести id чата и топика')
 
         case '/list':
+            global user_data
             ans = ''
             for user_tag, bdate in user_data.items():
-                delta = bdate - dt.datetime.today()
-                ans += f'@{user_tag} {bdate} {delta}\n'
+                ans += f'@{user_tag} {bdate[0]}.{bdate[1]}\n'
             splitted_message = util.smart_split(ans, chars_per_string=3700)
             bot.send_message(message.from_user.id, splitted_message)
 
@@ -60,8 +37,38 @@ def commands_handler_admin(message: Message, bot: TeleBot):
             bot.register_next_step_handler(message, remove_user, bot)
 
         case '/remove_all':
-            remove_all()
+            user_data = {}
 
         case '/table_init':
             bday_data = parse_from_table()
-            add_users_from_table(bday_data, bot)
+            add_users_from_table(bday_data)
+
+        case '/start_timer':
+            start_timer(bot)
+
+        case '/id':
+            print_id(message, bot)
+
+# Добавить пользователя
+def add_user(message: Message, bot: TeleBot) -> None:
+    user_tag, user_bday = message.text.split()
+    user_bday_day, user_bday_month = map(int, user_bday.split('.'))
+    user_data[user_tag] = (user_bday_day, user_bday_month)
+
+    bot.send_message(message.from_user.id, f'Пользователь @{user_tag} успешно добавлен')
+
+# Удалить пользователя
+def remove_user(message: Message, bot: TeleBot) -> None:
+    user_tag = message.text
+    try:
+        del user_data[user_tag]
+    except KeyError:
+        bot.send_message(message.from_user.id, 'Пользователя с таким id не существует')
+
+# Узнать ID чата и топика
+def print_id(message: Message, bot: TeleBot) -> None:
+    chat_id = message.chat.id
+    try: msg_thread_id = message.reply_to_message.message_thread_id
+    except AttributeError: msg_thread_id = "General"
+    bot.send_message(message.from_user.id, f"Chat ID этого чата: {chat_id}\nИ message_thread_id: {msg_thread_id}")
+    # print(f"Chat ID этого чата: {chat_id}\nИ message_thread_id: {msg_thread_id}")
