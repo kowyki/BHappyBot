@@ -50,6 +50,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
         case '/start_timer':
             try: 
                 start_timer(bot)
+                bot.send_message(message.from_user.id, f'Таймер запущен')
             except Exception as e:
                 bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
 
