@@ -79,7 +79,9 @@ def add_user(message: Message, bot: TeleBot) -> None:
 # Удалить пользователя
 def remove_user(message: Message, bot: TeleBot) -> None:
     user_tag = message.text
-    try: del users_data[user_tag]
+    try: 
+        del users_data[user_tag]
+        bot.send_message(message.from_user.id, 'Пользователь успешно удалён')
     except KeyError:
         bot.send_message(message.from_user.id, 'Пользователя с таким тегом не существует')
 
