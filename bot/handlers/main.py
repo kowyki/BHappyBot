@@ -27,7 +27,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             else: 
                 ans = ''
                 for user_tag, user_data in users_data.items():
-                    ans += f'@{user_data[1]} {user_tag} {user_data[0][0]}.{user_data[0][1]}\n'
+                    ans += f'{user_data[1]} @{user_tag} {user_data[0][0]}.{user_data[0][1]}\n'
                 splitted_message = util.smart_split(ans, chars_per_string=3700)
                 bot.send_message(message.from_user.id, splitted_message)
 
