@@ -3,7 +3,7 @@ import os, threading
 from telebot import TeleBot
 from dotenv import load_dotenv
 
-from ..data.user_data import *
+from ..data.users_data import *
 
 if 'CHAT_ID' not in globals():
     load_dotenv()
@@ -29,27 +29,28 @@ def check_date(bot: TeleBot) -> None:
     # Проверка на новый месяц 
     if today.day == 1:
         msg = []
-        for user_tag, bdate in user_data.items():
-            if bdate[1] == today.month: msg.append((bdate[0], user_tag))
+        for user_tag, user_data in users_data.items():
+            if user_data[0][1] == today.month: msg.append((user_data[0][0], user_tag, user_data[1]))
 
         if msg == []: 
             to_send = 'В этом месяце ни у кого нет дней рождения :('
         else: 
             msg.sort(key=lambda x: x[0])
-            to_send = 'В этом месяце день рождения у: \n'
-            for x in msg: to_send += f'{x[0]} @{x[1]}\n'
+            to_send = 'Всем привет! В этом месяце родились: \n'
+            for x in msg: to_send += f'- {x[2]} @{x[1]} {x[0]} числа\n'
 
         bot.send_message(CHAT_ID, to_send, message_thread_id=THREAD_ID)
     
     # Проверка людей, у которых сегодня день рождения
-    msg = ''
-    for user_tag, bdate in user_data.items():
-        if bdate[0] == today.day and bdate[1] == today.month:
-            msg += f'@{user_tag}, '
+    msg = []
+    for user_tag, user_data in users_data.items():
+        if user_data[0][0] == today.day and user_data[0][1] == today.month:
+            msg.append(f'{user_data[1]} @{user_tag}, ')
 
-    if msg != '':
-        msg = f'Сегодня день рождения у {msg[:-2]}! Поздравлям 🥳🎉'
-        bot.send_message(CHAT_ID, msg, message_thread_id=THREAD_ID)
+    if msg != []:
+        congrats_msg = f'Сегодня празднуют свой день рождения {"".join(msg[:-1])}'
+        congrats_msg = f'{congrats_msg[:-2]} и {msg[-1][:-2]}!🥳'
+        bot.send_message(CHAT_ID, congrats_msg, message_thread_id=THREAD_ID)
 
     # Запуск таймера на 1 день
     start_timer(bot, dt.timedelta(days=1).total_seconds())

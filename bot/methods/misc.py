@@ -1,25 +1,25 @@
 import json
 import pandas as pd
 
-from ..data.user_data import *
+from ..data.users_data import *
 
 # Добавить в базу людей из таблицы
 def add_users_from_table(table:dict) -> None:
-    for user_tag, user_bday in table.items():
-        user_data[user_tag] = (user_bday[0], user_bday[1])
+    for user_tag, user_data in table.items():
+        users_data[user_tag] = user_data
 
 # Спарсить из таблицы данные о людях
-def parse_from_table(sheet='BDay') -> dict:
-    excel = pd.read_excel("files/table.xlsx", sheet_name=sheet, usecols=[2,4], parse_dates=[0])
+def parse_from_table(sheet='Днюшки') -> dict:
+    excel = pd.read_excel("files/table.xlsx", sheet_name=sheet, usecols=[1,2,4], parse_dates=[1], date_format='%d-%m-%Y')
 
     data_list = excel.to_dict(orient='records')
-
-    # with open(f'files/out.json', 'w', encoding='utf-8') as f:
-    #     json.dump(data_list, f, indent=4, ensure_ascii=False)
 
     bday_data = {}
     for user in data_list: 
         try:
+            uname = user['ФИ']
+            user_name = uname.split()[-1]
+
             tg = user['Телега']
             user_tag = tg[tg.index('@')+1:].strip()
 
@@ -27,8 +27,8 @@ def parse_from_table(sheet='BDay') -> dict:
             bday = bdate[bdate.index('-')+1:bdate.index(' ')]
             bday = tuple(map(int, bday.split('-')[::-1]))
 
-            bday_data[user_tag] = bday
+            bday_data[user_tag] = (bday, user_name)
 
-        except: ...
+        except Exception as e: ... # print(e)
 
     return bday_data

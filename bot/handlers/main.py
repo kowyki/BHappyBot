@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from telebot import TeleBot, util
 from telebot.types import Message
 
-from ..data.user_data import *
+from ..data.users_data import *
 from ..methods.misc import * 
 from ..methods.sender import * 
 
@@ -18,29 +18,29 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
     if str(message.from_user.id) not in admins_id: return
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/remove_all - удалить все данные \n/table_init - занести в список людей из таблицы \n/start_timer - запустить ежедневную проверку \n/id - вывести id чата и топика\n/upload_table - отправить таблицу')
+            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/remove_all - удалить все данные \n/table_init - занести в список людей из таблицы \n/start_timer - запустить ежедневную проверку \n/id - вывести id чата и топика\n/table_upload - отправить таблицу')
 
         case '/list':
-            global user_data
-            ans = ''
-            if user_data == {}: 
+            global users_data
+            if users_data == {}: 
                 bot.send_message(message.from_user.id, 'Пользователей нет')
             else: 
-                for user_tag, bdate in user_data.items():
-                    ans += f'@{user_tag} {bdate[0]}.{bdate[1]}\n'
+                ans = ''
+                for user_tag, user_data in users_data.items():
+                    ans += f'@{user_data[1]} {user_tag} {user_data[0][0]}.{user_data[0][1]}\n'
                 splitted_message = util.smart_split(ans, chars_per_string=3700)
                 bot.send_message(message.from_user.id, splitted_message)
 
         case '/add':
-            bot.send_message(message.from_user.id, 'Введите тег пользователя и дату его рождения в формате: tag d.m')
+            bot.send_message(message.from_user.id, 'Введите тег пользователя, имя и дату его рождения в формате: tag name d.m')
             bot.register_next_step_handler(message, add_user, bot)
 
         case '/remove':
-            bot.send_message(message.from_user.id, 'Введите id пользователя, которого необходимо удалить')
+            bot.send_message(message.from_user.id, 'Введите тег пользователя, которого необходимо удалить')
             bot.register_next_step_handler(message, remove_user, bot)
 
         case '/remove_all':
-            user_data = {}
+            users_data = {}
             bot.send_message(message.from_user.id, 'Пользователи очищены')
 
         case '/table_init':
@@ -60,16 +60,16 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             except Exception as e:
                 bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
 
-        case '/upload_table':
+        case '/table_upload':
             bot.send_message(message.from_user.id, 'Отправьте файл таблицы')
-            bot.register_next_step_handler(message, upload_table, bot)
+            bot.register_next_step_handler(message, table_upload, bot)
 
 # Добавить пользователя
 def add_user(message: Message, bot: TeleBot) -> None:
     try: 
-        user_tag, user_bday = message.text.split()
+        user_tag, user_name, user_bday = message.text.split()
         user_bday_day, user_bday_month = map(int, user_bday.split('.'))
-        user_data[user_tag] = (user_bday_day, user_bday_month)
+        users_data[user_tag] = ((user_bday_day, user_bday_month), user_name)
 
         bot.send_message(message.from_user.id, f'Пользователь @{user_tag} успешно добавлен')
 
@@ -79,9 +79,9 @@ def add_user(message: Message, bot: TeleBot) -> None:
 # Удалить пользователя
 def remove_user(message: Message, bot: TeleBot) -> None:
     user_tag = message.text
-    try: del user_data[user_tag]
+    try: del users_data[user_tag]
     except KeyError:
-        bot.send_message(message.from_user.id, 'Пользователя с таким id не существует')
+        bot.send_message(message.from_user.id, 'Пользователя с таким тегом не существует')
 
 # Парсинг данных из таблицы
 def table_init(message: Message, bot: TeleBot) -> None:
@@ -99,10 +99,9 @@ def print_id(message: Message, bot: TeleBot) -> None:
     try: msg_thread_id = message.reply_to_message.message_thread_id
     except AttributeError: msg_thread_id = "General"
     bot.send_message(message.from_user.id, f"Chat ID этого чата: {chat_id}\nИ message_thread_id: {msg_thread_id}")
-    # print(f"Chat ID этого чата: {chat_id}\nИ message_thread_id: {msg_thread_id}")
 
 # Загрузка таблицы
-def upload_table(message: Message, bot: TeleBot) -> None:
+def table_upload(message: Message, bot: TeleBot) -> None:
     try:
         file_info = bot.get_file(message.document.file_id)
         d_file = bot.download_file(file_info.file_path)
