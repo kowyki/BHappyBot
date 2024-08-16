@@ -14,8 +14,8 @@ def parse_from_table(sheet='BDay') -> dict:
 
     data_list = excel.to_dict(orient='records')
 
-    with open(f'format/out.json', 'w', encoding='utf-8') as f:
-        json.dump(data_list, f, indent=4, ensure_ascii=False)
+    # with open(f'files/out.json', 'w', encoding='utf-8') as f:
+    #     json.dump(data_list, f, indent=4, ensure_ascii=False)
 
     bday_data = {}
     for user in data_list: 
