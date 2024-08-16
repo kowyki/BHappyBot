@@ -18,7 +18,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
     if str(message.from_user.id) not in admins_id: return
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/remove_all - удалить все данные \n/table_init - занести в список людей из таблицы \n/start_timer - запустить ежедневную проверку \n/id - вывести id чата и топика\n/table_upload - отправить таблицу')
+            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/clear - удалить все данные \n/timer - запустить ежедневную проверку \n/table_upload - отправить таблицу \n/table_init - занести в список людей из таблицы \n/id - вывести id чата и топика')
 
         case '/list':
             global users_data
@@ -39,30 +39,30 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             bot.send_message(message.from_user.id, 'Введите тег пользователя, которого необходимо удалить')
             bot.register_next_step_handler(message, remove_user, bot)
 
-        case '/remove_all':
+        case '/clear':
             users_data = {}
             bot.send_message(message.from_user.id, 'Пользователи очищены')
 
-        case '/table_init':
-            bot.send_message(message.from_user.id, f'Введите название листа с пользователями')
-            bot.register_next_step_handler(message, table_init, bot)
-
-        case '/start_timer':
+        case '/timer':
             try: 
                 start_timer(bot)
                 bot.send_message(message.from_user.id, f'Таймер запущен')
             except Exception as e:
                 bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
 
+        case '/table_upload':
+            bot.send_message(message.from_user.id, 'Отправьте файл таблицы')
+            bot.register_next_step_handler(message, table_upload, bot)
+
+        case '/table_init':
+            bot.send_message(message.from_user.id, f'Введите название листа с пользователями')
+            bot.register_next_step_handler(message, table_init, bot)
+
         case '/id':
             try: 
                 print_id(message, bot)
             except Exception as e:
                 bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
-
-        case '/table_upload':
-            bot.send_message(message.from_user.id, 'Отправьте файл таблицы')
-            bot.register_next_step_handler(message, table_upload, bot)
 
 # Добавить пользователя
 def add_user(message: Message, bot: TeleBot) -> None:

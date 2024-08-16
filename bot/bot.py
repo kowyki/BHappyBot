@@ -18,4 +18,4 @@ def init_bot():
     return bot
 
 def register_handlers():
-    bot.register_message_handler(commands_handler, commands=['start', 'month_list', 'list', 'add', 'remove', 'remove_all','table_init', 'id', 'table_upload'], pass_bot=True)
+    bot.register_message_handler(commands_handler, commands=['start', 'list', 'add', 'remove', 'clear', 'timer', 'table_upload', 'table_init', 'id'], pass_bot=True)
