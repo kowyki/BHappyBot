@@ -13,7 +13,7 @@ if 'CHAT_ID' not in globals():
 # Запуск таймера
 def start_timer(bot: TeleBot, seconds=None) -> None: 
     now = dt.datetime.now()
-    time_send = dt.datetime.strptime(f'{now.date()} 9:0:0', '%Y-%m-%d %X')
+    time_send = now.replace(hour=9, minute=0, second=1, microsecond=0)
 
     delta = time_send - now
     if now.hour >= 9: delta += dt.timedelta(days=1)
