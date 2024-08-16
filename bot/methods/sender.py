@@ -13,7 +13,7 @@ if 'CHAT_ID' not in globals():
 # Запуск таймера
 def start_timer(bot: TeleBot, seconds=None) -> None: 
     now = dt.datetime.now()
-    time_send = dt.datetime.strptime(f'{now.date()} 9:{now.minute}:{now.second}', '%Y-%m-%d %H:%M:%S')
+    time_send = dt.datetime.strptime(f'{now.date()} 9:0:0', '%Y-%m-%d %X')
 
     delta = time_send - now
     if now.hour >= 9: delta += dt.timedelta(days=1)
@@ -47,7 +47,11 @@ def check_date(bot: TeleBot) -> None:
         if user_data[0][0] == today.day and user_data[0][1] == today.month:
             msg.append(f'{user_data[1]} @{user_tag}, ')
 
-    if msg != []:
+    if len(msg) == 1:
+        congrats_msg = f'Сегодня празднует свой день рождения {msg[0][:-2]}!🥳'
+        bot.send_message(CHAT_ID, congrats_msg, message_thread_id=THREAD_ID)
+
+    elif len(msg) > 1:
         congrats_msg = f'Сегодня празднуют свой день рождения {"".join(msg[:-1])}'
         congrats_msg = f'{congrats_msg[:-2]} и {msg[-1][:-2]}!🥳'
         bot.send_message(CHAT_ID, congrats_msg, message_thread_id=THREAD_ID)
