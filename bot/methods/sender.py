@@ -44,7 +44,7 @@ def check_date(bot: TeleBot) -> None:
     # Проверка людей, у которых сегодня день рождения
     msg = ''
     for user_tag, bdate in user_data.items():
-        if bdate[1] == today.day:
+        if bdate[0] == today.day and bdate[1] == today.month:
             msg += f'@{user_tag}, '
 
     if msg != '':
