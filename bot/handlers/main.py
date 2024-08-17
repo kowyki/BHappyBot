@@ -39,7 +39,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             bot.register_next_step_handler(message, remove_user, bot)
 
         case '/clear':
-            users_data = {}
+            users_data.clear()
             bot.send_message(message.from_user.id, 'Пользователи очищены')
 
         case '/timer':
@@ -84,6 +84,25 @@ def remove_user(message: Message, bot: TeleBot) -> None:
     except KeyError:
         bot.send_message(message.from_user.id, 'Пользователя с таким тегом не существует')
 
+# Загрузка таблицы
+def table_upload(message: Message, bot: TeleBot) -> None:
+    try:
+        file_info = bot.get_file(message.document.file_id)
+        d_file = bot.download_file(file_info.file_path)
+
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        dir_path = dir_path[:dir_path.index('bot')]
+        if not os.path.exists(dir_path+'files'):
+            os.mkdir(dir_path+'files')
+
+        with open(f'{dir_path}files/table.xlsx', 'wb') as new_file:
+            new_file.write(d_file)
+            new_file.close()
+        bot.send_message(message.from_user.id, f'Таблица успешно сохранена')
+
+    except Exception as e:
+        bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
+
 # Парсинг данных из таблицы
 def table_init(message: Message, bot: TeleBot) -> None:
     sheet_name = message.text
@@ -100,16 +119,3 @@ def print_id(message: Message, bot: TeleBot) -> None:
     try: msg_thread_id = message.reply_to_message.message_thread_id
     except AttributeError: msg_thread_id = "General"
     bot.send_message(message.from_user.id, f"Chat ID этого чата: {chat_id}\nИ message_thread_id: {msg_thread_id}")
-
-# Загрузка таблицы
-def table_upload(message: Message, bot: TeleBot) -> None:
-    try:
-        file_info = bot.get_file(message.document.file_id)
-        d_file = bot.download_file(file_info.file_path)
-        with open('files/table.xlsx', 'wb') as new_file:
-            new_file.write(d_file)
-            new_file.close()
-        bot.send_message(message.from_user.id, f'Таблица успешно сохранена')
-
-    except Exception as e:
-        bot.send_message(message.from_user.id, f'Произошла ошибка {e}')

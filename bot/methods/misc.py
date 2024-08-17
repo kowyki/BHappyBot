@@ -1,4 +1,4 @@
-import json
+import os, json
 import pandas as pd
 
 from ..data.users_data import *
@@ -7,10 +7,14 @@ from ..data.users_data import *
 def add_users_from_table(table:dict) -> None:
     for user_tag, user_data in table.items():
         users_data[user_tag] = user_data
+    print(users_data)
 
 # Спарсить из таблицы данные о людях
 def parse_from_table(sheet='Днюшки') -> dict:
-    excel = pd.read_excel("files/table.xlsx", sheet_name=sheet, usecols=[1,2,4], parse_dates=[1], date_format='%d-%m-%Y')
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = dir_path[:dir_path.index('bot')]
+
+    excel = pd.read_excel(f'{dir_path}files/table.xlsx', sheet_name=sheet, usecols=[1,2,4], parse_dates=[1], date_format='%d-%m-%Y')
 
     data_list = excel.to_dict(orient='records')
 
