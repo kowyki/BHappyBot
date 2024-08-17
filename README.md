@@ -11,16 +11,20 @@ git clone https://github.com/kowyki/BHappyBot.git
 cd BHappyBot
 ```
 2. Создание виртуального окружения
+
 `python3 -m venv .venv`
 3. Активация виртуального окружения
+
 `source venv/bin/activate`
 4. Установка зависимостей
+
 `pip install -r requirements.txt`
-5. Так как для хранения конфиденциальных данных используются переменные окружения, необходимо в папку `bot` добавить файл `.env` с указанием ![переменных окружения](https://github.com/kowyki/BHappyBot#Переменные окружения)
+5. Так как для хранения конфиденциальных данных используются переменные окружения, необходимо в папку `bot` добавить файл `.env` с указанием [переменных окружения](https://github.com/kowyki/BHappyBot#переменные-окружения)
 ## Добавление в автозапуск (Linux)
 1. Создание и открытие файла юнита
+
 `sudo nano /etc/systemd/system/BHappyBot.service`
-2. Добавление служебной информации
+2. Добавление служебной информации в файл юнита
 ```sh
 [Unit]
 Description=Launch BHappyBot
@@ -36,8 +40,10 @@ Restart=always
 WantedBy=multi-user.target
 ```
 3. Добавление юнита в автозагрузку
+
 `sudo systemctl enable BHappyBot.service`
 4. Перезапуск сервиса
+
 `sudo systemctl restart BHappyBot.service`
 ## Переменные окружения
 - `API_KEY` — токен бота
