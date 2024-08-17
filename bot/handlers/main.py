@@ -54,6 +54,12 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             bot.register_next_step_handler(message, table_upload, bot)
 
         case '/table_init':
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+            dir_path = dir_path[:dir_path.index('bot')]
+            if not os.path.exists(dir_path+'files'):
+                bot.send_message(message.from_user.id, f'Вы не добавили таблицу')
+                return
+
             bot.send_message(message.from_user.id, f'Введите название листа с пользователями')
             bot.register_next_step_handler(message, table_init, bot)
 

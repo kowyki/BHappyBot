@@ -7,7 +7,6 @@ from ..data.users_data import *
 def add_users_from_table(table:dict) -> None:
     for user_tag, user_data in table.items():
         users_data[user_tag] = user_data
-    print(users_data)
 
 # Спарсить из таблицы данные о людях
 def parse_from_table(sheet='Днюшки') -> dict:
