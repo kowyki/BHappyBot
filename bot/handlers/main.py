@@ -9,12 +9,12 @@ from ..methods.sender import *
 
 if 'admins_id' not in globals():
     load_dotenv()
-    admins_id = [os.getenv('ADMIN_ID_1'), os.getenv('ADMIN_ID_2')]
+    admin_ids = list(map(int, os.getenv('ADMIN_IDS').split()))
 
 # Обработчик комманд
 def commands_handler(message: Message, bot: TeleBot) -> None:
     # Проверка на админа
-    if str(message.from_user.id) not in admins_id: return
+    if message.from_user.id not in admin_ids: return
     match message.text:
         case '/start':
             bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/clear - удалить все данные \n/timer - запустить ежедневную проверку \n/table_upload - отправить таблицу \n/table_init - занести в список людей из таблицы \n/id - вывести id чата и топика')
