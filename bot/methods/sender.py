@@ -13,8 +13,7 @@ if 'CHAT_ID' not in globals():
 
 # Получить дату и время
 def get_datetime() -> dt.datetime:
-    page = urlopen('http://just-the-time.appspot.com/')
-    date = page.read().strip().decode('utf-8')
+    date = urlopen('http://just-the-time.appspot.com/').read().strip().decode('utf-8')
     now_gmt = dt.datetime.strptime(date, '%Y-%m-%d %X')
     now_mos = now_gmt.replace(hour=now_gmt.hour+3)
     return now_mos
