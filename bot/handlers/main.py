@@ -1,5 +1,4 @@
 import os
-import datetime as dt
 from dotenv import load_dotenv
 from telebot import TeleBot, util
 from telebot.types import Message

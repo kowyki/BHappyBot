@@ -1,5 +1,6 @@
-import datetime as dt
 import os, threading
+import datetime as dt
+from urllib.request import urlopen
 from telebot import TeleBot
 from dotenv import load_dotenv
 
@@ -10,10 +11,18 @@ if 'CHAT_ID' not in globals():
     CHAT_ID = int(os.getenv('CHAT_ID'))
     THREAD_ID = int(os.getenv('THREAD_ID'))
 
+# Получить дату и время
+def get_datetime() -> dt.datetime:
+    page = urlopen('http://just-the-time.appspot.com/')
+    date = page.read().strip().decode('utf-8')
+    now_gmt = dt.datetime.strptime(date, '%Y-%m-%d %X')
+    now_mos = now_gmt.replace(hour=now_gmt.hour+3)
+    return now_mos
+
 # Запуск таймера
-def start_timer(bot: TeleBot, seconds=None) -> None: 
-    now = dt.datetime.now()
-    time_send = now.replace(hour=9, minute=0, second=1, microsecond=0)
+def start_timer(bot: TeleBot, seconds=None) -> None:
+    now = get_datetime()
+    time_send = now.replace(hour=9, minute=0, second=10, microsecond=0)
 
     delta = time_send - now
     if now.hour >= 9: delta += dt.timedelta(days=1)
@@ -25,7 +34,7 @@ def start_timer(bot: TeleBot, seconds=None) -> None:
 
 # Проверка даты
 def check_date(bot: TeleBot) -> None:
-    today = dt.date.today()
+    today = get_datetime()
     # Проверка на новый месяц 
     if today.day == 1:
         msg = []
