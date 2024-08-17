@@ -16,7 +16,7 @@ python3 -m venv .venv
 ```
 3. Активация виртуального окружения
 ```sh
-source venv/bin/activate
+source .venv/bin/activate
 ```
 4. Установка зависимостей
 ```sh
