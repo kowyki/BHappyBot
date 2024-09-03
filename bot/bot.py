@@ -9,8 +9,8 @@ def start_bot():
     global bot
     bot = init_bot()
     register_handlers()
-    bot.infinity_polling(timeout=5)
     start_services(bot)
+    bot.infinity_polling(timeout=5)
 
 # Включение бота
 def init_bot():
