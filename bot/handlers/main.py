@@ -17,7 +17,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
     if message.from_user.id not in admin_ids: return
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, 'Список комманд:\n/start - вывести список комманд \n/list - посмотреть список всех людей \n/add - добавить человека \n/remove - удалить человека \n/clear - удалить все данные \n/timer - запустить ежедневную проверку \n/table_upload - отправить таблицу \n/table_init - занести в список людей из таблицы \n/id - вывести id чата и топика')
+            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/table_upload — загрузить таблицу \n/table_init —  занести в базу данных пользователей из таблицы \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате')
 
         case '/list':
             global users_data

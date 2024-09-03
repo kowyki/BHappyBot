@@ -9,7 +9,7 @@ def add_users_from_table(table:dict) -> None:
         users_data[user_tag] = user_data
 
 # Спарсить из таблицы данные о людях
-def parse_from_table() -> dict:
+def parse_from_table(sheet="Днюшки") -> dict:
     dir_path = os.path.dirname(os.path.realpath(__file__))
     dir_path = dir_path[:dir_path.index('bot')]
 
