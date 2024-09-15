@@ -24,7 +24,7 @@ def parse_from_table(sheet="Днюшки") -> dict:
             user_name = uname.split()[-1]
 
             tg = user['Телега']
-            user_tag = tg[tg.index('@')+1:].strip()
+            user_tag = tg[tg.index('@'):].strip()
 
             bdate = user['Дата рождения (дд.гг)']
             bday = bdate[bdate.index('-')+1:bdate.index(' ')]

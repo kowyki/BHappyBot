@@ -11,6 +11,9 @@ if 'CHAT_ID' not in globals():
     CHAT_ID = int(os.getenv('CHAT_ID'))
     THREAD_ID = int(os.getenv('THREAD_ID'))
 
+if 'timer_data' not in globals():
+    timer_data = {}
+
 # Получить дату и время
 def get_datetime() -> dt.datetime:
     date = urlopen('http://just-the-time.appspot.com/').read().strip().decode('utf-8')
@@ -28,8 +31,8 @@ def start_timer(bot: TeleBot, seconds=None) -> None:
 
     seconds = seconds or delta.total_seconds()
 
-    main_timer = threading.Timer(seconds, check_date, [bot])
-    main_timer.start()
+    timer_data['main'] = threading.Timer(seconds, check_date, [bot])
+    timer_data['main'].start()
 
 # Проверка даты
 def check_date(bot: TeleBot) -> None:
@@ -45,7 +48,7 @@ def check_date(bot: TeleBot) -> None:
         else: 
             msg.sort(key=lambda x: x[0])
             to_send = 'Всем привет! В этом месяце родились: \n'
-            for x in msg: to_send += f'- {x[2]} @{x[1]} {x[0]} числа\n'
+            for x in msg: to_send += f'- {x[2]} {x[1]} {x[0]} числа\n'
 
         bot.send_message(CHAT_ID, to_send, message_thread_id=THREAD_ID)
     
@@ -53,7 +56,7 @@ def check_date(bot: TeleBot) -> None:
     msg = []
     for user_tag, user_data in users_data.items():
         if user_data[0][0] == today.day and user_data[0][1] == today.month:
-            msg.append(f'{user_data[1]} @{user_tag}, ')
+            msg.append(f'{user_data[1]} {user_tag}, ')
 
     if len(msg) == 1:
         congrats_msg = f'Сегодня празднует свой день рождения {msg[0][:-2]}!🥳'
