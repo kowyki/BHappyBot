@@ -17,7 +17,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
     if message.from_user.id not in admin_ids: return
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/table_upload — загрузить таблицу \n/table_init —  занести в базу данных пользователей из таблицы \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате')
+            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/table_upload — загрузить таблицу \n/table_init —  занести в базу данных пользователей из таблицы \n/info —  вывести основную информацию \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате')
 
         case '/list':
             global users_data
@@ -26,7 +26,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             else: 
                 ans = ''
                 for user_tag, user_data in users_data.items():
-                    ans += f'{user_data[1]} @{user_tag} {user_data[0][0]}.{user_data[0][1]}\n'
+                    ans += f'{user_data[1]} {user_tag} {user_data[0][0]}.{user_data[0][1]}\n'
                 splitted_message = util.smart_split(ans, chars_per_string=3700)
                 bot.send_message(message.from_user.id, splitted_message)
 
@@ -62,6 +62,27 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
 
             bot.send_message(message.from_user.id, f'Введите название листа с пользователями')
             bot.register_next_step_handler(message, table_init, bot)
+
+        case '/info':
+            msg = []
+            # Информация о таймере
+            if 'main' in timer_data:
+                msg.append(f'Время создания таймера: {timer_data['main'][2]}')
+                msg.append(f'Время до активации: {timer_data['main'][1]}')
+            else: msg.append('Таймер не активен')
+
+            # Наличие пользователей
+            if users_data != {}: msg.append('Пользователи есть')
+            else: msg.append('Пользователей нет')
+
+            # Наличие папки
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+            dir_path = dir_path[:dir_path.index('bot')]
+            if not os.path.exists(dir_path+'files'):
+                msg.append('Папка "files" отсутствует')
+            else: msg.append('Папка "files" создана')
+
+            bot.send_message(message.from_user.id, '\n'.join(msg))
 
         case '/id':
             try: 

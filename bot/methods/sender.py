@@ -31,8 +31,9 @@ def start_timer(bot: TeleBot, seconds=None) -> None:
 
     seconds = seconds or delta.total_seconds()
 
-    timer_data['main'] = threading.Timer(seconds, check_date, [bot])
-    timer_data['main'].start()
+    timer_data['main'] = (threading.Timer(seconds, check_date, [bot]), f'{int(seconds//3600)}ч {int((seconds - (seconds//3600)*3600)//60)}м {int(seconds%60)}с', now.strftime('%d.%m %X'))
+    timer_data['main'][0].start()
+
 
 # Проверка даты
 def check_date(bot: TeleBot) -> None:
