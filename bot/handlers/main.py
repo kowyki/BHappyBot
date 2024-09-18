@@ -67,8 +67,8 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             msg = []
             # Информация о таймере
             if 'main' in timer_data:
-                msg.append(f'Время создания таймера: {timer_data['main'][2]}')
-                msg.append(f'Время до активации: {timer_data['main'][1]}')
+                msg.append(f'Время создания таймера: {timer_data["main"][2]}')
+                msg.append(f'Время до активации: {timer_data["main"][1]}')
             else: msg.append('Таймер не активен')
 
             # Наличие пользователей
