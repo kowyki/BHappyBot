@@ -59,7 +59,11 @@ def check_date(bot: TeleBot) -> None:
         if user_data[0][0] == today.day and user_data[0][1] == today.month:
             msg.append(f'{user_data[1]} {user_tag}, ')
 
-    if len(msg) == 1:
+    if today.day == 23 and today.month == 3:
+        congrats_msg = f'Сегодня день рождения у моего папы @kowyki 🥹🥹'
+        bot.send_message(CHAT_ID, congrats_msg, message_thread_id=THREAD_ID)
+    
+    elif len(msg) == 1:
         congrats_msg = f'Сегодня празднует свой день рождения {msg[0][:-2]}!🥳'
         bot.send_message(CHAT_ID, congrats_msg, message_thread_id=THREAD_ID)
 
