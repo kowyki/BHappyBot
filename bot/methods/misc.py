@@ -8,8 +8,8 @@ def parse_from_table(sheet="Днюшки") -> None:
     db = sqlite3.connect('bot/data/data.db')
     cursor = db.cursor()
     cursor.execute('SELECT var_value FROM vars WHERE var_name = "google_sheets_link"')
-
-    spreadsht = cursor.fetchall()
+    url = cursor.fetchall()
+    spreadsht = client.open_by_url(url)
     worksht = spreadsht.worksheet_by_title(sheet)
 
     data = list(zip(
