@@ -19,14 +19,14 @@ def init_bot():
     return bot
 
 def register_handlers():
-    bot.register_message_handler(commands_handler, commands=['start', 'list', 'add', 'remove', 'clear', 'timer', 'table_upload', 'table_init', 'id', 'info'], pass_bot=True)
+    bot.register_message_handler(commands_handler, commands=['start', 'list', 'add', 'remove', 'clear', 'timer', 'table_sync', 'id', 'info'], pass_bot=True)
 
 # Действия после включения бота
 def start_services(bot: TeleBot):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    dir_path = dir_path[:dir_path.index('bot')]
-    if os.path.exists(dir_path+'files'):
-        bday_data = parse_from_table()
-        add_users_from_table(bday_data)
+    data_path = os.path.dirname(os.path.realpath(__file__))
+    data_path = data_path[:data_path.index('bot')]
+    data_path = os.path.join(data_path, 'data', 'data.db')
+    if not os.path.isfile(data_path):
+        create_db()
 
     start_timer(bot)

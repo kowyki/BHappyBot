@@ -17,16 +17,21 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
     if message.from_user.id not in admin_ids: return
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/table_upload — загрузить таблицу \n/table_init —  занести в базу данных пользователей из таблицы \n/info —  вывести основную информацию \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате')
+            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/table_sync — синхронизация данных о пользователях с облаком Google Sheets \n/info — вывести основную информацию \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате')
 
         case '/list':
-            global users_data
-            if users_data == {}: 
+            db = sqlite3.connect('bot/data/data.db')
+            cursor = db.cursor()
+            cursor.execute(f'SELECT * FROM users_data')
+            users_data = cursor.fetchall()
+            db.close()
+
+            if users_data == []: 
                 bot.send_message(message.from_user.id, 'Пользователей нет')
             else: 
                 ans = ''
-                for user_tag, user_data in users_data.items():
-                    ans += f'{user_data[1]} {user_tag} {user_data[0][0]}.{user_data[0][1]}\n'
+                for item in users_data:  
+                    ans += f'{item[2]} @{item[0]} {item[1]}\n'
                 splitted_message = util.smart_split(ans, chars_per_string=3700)
                 bot.send_message(message.from_user.id, splitted_message)
 
@@ -39,7 +44,11 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             bot.register_next_step_handler(message, remove_user, bot)
 
         case '/clear':
-            users_data.clear()
+            db = sqlite3.connect('bot/data/data.db')
+            cursor = db.cursor()
+            cursor.execute('DELETE FROM users_data')
+            db.commit()
+            db.close()
             bot.send_message(message.from_user.id, 'Пользователи очищены')
 
         case '/timer':
@@ -49,38 +58,30 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             except Exception as e:
                 bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
 
-        case '/table_upload':
-            bot.send_message(message.from_user.id, 'Отправьте файл таблицы')
-            bot.register_next_step_handler(message, table_upload, bot)
-
-        case '/table_init':
-            dir_path = os.path.dirname(os.path.realpath(__file__))
-            dir_path = dir_path[:dir_path.index('bot')]
-            if not os.path.exists(dir_path+'files'):
-                bot.send_message(message.from_user.id, f'Вы не добавили таблицу')
-                return
-
-            bot.send_message(message.from_user.id, f'Введите название листа с пользователями')
-            bot.register_next_step_handler(message, table_init, bot)
+        case '/table_sync':
+            try:
+                parse_from_table()
+                bot.send_message(message.from_user.id, 'Пользователи синхронизированы с данными в Google Sheets')
+            except: 
+                bot.send_message(message.from_user.id, 'Произошла ошибка')
 
         case '/info':
             msg = []
             # Информация о таймере
             if 'main' in timer_data:
-                msg.append(f'Время создания таймера: {timer_data['main'][2]}')
-                msg.append(f'Время до активации: {timer_data['main'][1]}')
+                msg.append(f'Время создания таймера: {timer_data["main"][2]}')
+                msg.append(f'Время до активации: {timer_data["main"][1]}')
             else: msg.append('Таймер не активен')
 
             # Наличие пользователей
-            if users_data != {}: msg.append('Пользователи есть')
-            else: msg.append('Пользователей нет')
+            db = sqlite3.connect('bot/data/data.db')
+            cursor = db.cursor()
+            cursor.execute(f'SELECT * FROM users_data')
+            users_data = cursor.fetchall()
+            db.close()
 
-            # Наличие папки
-            dir_path = os.path.dirname(os.path.realpath(__file__))
-            dir_path = dir_path[:dir_path.index('bot')]
-            if not os.path.exists(dir_path+'files'):
-                msg.append('Папка "files" отсутствует')
-            else: msg.append('Папка "files" создана')
+            if users_data != []: msg.append('Пользователи есть')
+            else: msg.append('Пользователей нет')
 
             bot.send_message(message.from_user.id, '\n'.join(msg))
 
@@ -90,55 +91,39 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
             except Exception as e:
                 bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
 
+
 # Добавить пользователя
 def add_user(message: Message, bot: TeleBot) -> None:
     try: 
         user_tag, user_name, user_bday = message.text.split()
-        user_bday_day, user_bday_month = map(int, user_bday.split('.'))
-        users_data[user_tag] = ((user_bday_day, user_bday_month), user_name)
+        user_bday = dt.datetime.strptime(user_bday, "%d.%m")
+        user_bday = user_bday.strftime("%d.%m")
+
+        db = sqlite3.connect('bot/data/data.db')
+        cursor = db.cursor()
+        cursor.execute(f'INSERT INTO users_data VALUES (?, ?, ?)', [user_tag, user_bday, user_name])
+        db.commit()
+        db.close()
 
         bot.send_message(message.from_user.id, f'Пользователь @{user_tag} успешно добавлен')
 
     except:
-        bot.send_message(message.from_user.id, f'Вы ввели данные в неверном формате')
+        bot.send_message(message.from_user.id, 'Вы ввели данные в неверном формате')
+
 
 # Удалить пользователя
 def remove_user(message: Message, bot: TeleBot) -> None:
     user_tag = message.text
     try: 
-        del users_data[user_tag]
-        bot.send_message(message.from_user.id, 'Пользователь успешно удалён')
-    except KeyError:
+        db = sqlite3.connect('bot/data/data.db')
+        cursor = db.cursor()
+        cursor.execute(f'DELETE FROM users_data WHERE user_tag = ?', [user_tag])
+        db.commit()
+        db.close()
+        bot.send_message(message.from_user.id, f'Пользователь @{user_tag} успешно удалён')
+    except:
         bot.send_message(message.from_user.id, 'Пользователя с таким тегом не существует')
 
-# Загрузка таблицы
-def table_upload(message: Message, bot: TeleBot) -> None:
-    try:
-        file_info = bot.get_file(message.document.file_id)
-        d_file = bot.download_file(file_info.file_path)
-
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        dir_path = dir_path[:dir_path.index('bot')]
-        if not os.path.exists(dir_path+'files'):
-            os.mkdir(dir_path+'files')
-
-        with open(f'{dir_path}files/table.xlsx', 'wb') as new_file:
-            new_file.write(d_file)
-            new_file.close()
-        bot.send_message(message.from_user.id, f'Таблица успешно сохранена')
-
-    except Exception as e:
-        bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
-
-# Парсинг данных из таблицы
-def table_init(message: Message, bot: TeleBot) -> None:
-    sheet_name = message.text
-    try: 
-        bday_data = parse_from_table(sheet_name)
-        add_users_from_table(bday_data)
-        bot.send_message(message.from_user.id, 'Пользователи добавлены')
-    except Exception as e:
-        bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
 
 # Узнать ID чата и топика
 def print_id(message: Message, bot: TeleBot) -> None:
