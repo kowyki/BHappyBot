@@ -12,7 +12,7 @@ if 'CHAT_ID' not in globals():
     THREAD_ID = int(os.getenv('THREAD_ID'))
 
 if 'timer_data' not in globals():
-    timer_data = {}
+    timer_data = []
 
 # Получить дату и время
 def get_today() -> dt.datetime:
@@ -31,8 +31,12 @@ def start_timer(bot: TeleBot, seconds=None) -> None:
 
     seconds = seconds or delta.total_seconds()
 
-    timer_data['main'] = (threading.Timer(seconds, check_date, [bot]), f'{int(seconds//3600)}ч {int((seconds - (seconds//3600)*3600)//60)}м {int(seconds%60)}с', now.strftime('%d.%m %X'))
-    timer_data['main'][0].start()
+    timer = threading.Timer(seconds, check_date, [bot])
+    before_activation = f'{int(seconds//3600)}ч {int((seconds - (seconds//3600)*3600)//60)}м {int(seconds%60)}с'
+    creation_time = now.strftime('%d.%m %X')
+
+    timer_data = [timer, before_activation, creation_time]
+    timer_data[0].start()
 
 
 # Проверка даты
