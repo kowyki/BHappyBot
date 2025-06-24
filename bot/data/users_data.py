@@ -9,5 +9,10 @@ def create_db():
         user_name TEXT
         )
     """)
+    cursor.execute("""CREATE TABLE vars (
+        var_name TEXT,
+        var_value TEXT
+        )
+    """)
     db.commit()
     db.close()

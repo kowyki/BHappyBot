@@ -17,7 +17,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
     if message.from_user.id not in admin_ids: return
     match message.text:
         case '/start':
-            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/table_sync — синхронизация данных о пользователях с облаком Google Sheets \n/info — вывести основную информацию \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате')
+            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/add_google_sheets — добавить ссылку на Google Таблицу с данными пользователей. В первом столбце ФИ, во втором дата рождения, в третьем телеграм-тег \n/table_sync — синхронизация данных о пользователях с облаком Google Таблиц \n/info — вывести основную информацию \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате')
 
         case '/list':
             db = sqlite3.connect('bot/data/data.db')
@@ -57,6 +57,10 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
                 bot.send_message(message.from_user.id, f'Таймер запущен')
             except Exception as e:
                 bot.send_message(message.from_user.id, f'Произошла ошибка {e}')
+
+        case '/add_google_sheets':
+            bot.send_message(message.from_user.id, 'Введите ссылку на Google Таблицу с данными пользователей')
+            bot.register_next_step_handler(message, add_google_sheets, bot)
 
         case '/table_sync':
             try:
@@ -123,6 +127,20 @@ def remove_user(message: Message, bot: TeleBot) -> None:
         bot.send_message(message.from_user.id, f'Пользователь @{user_tag} успешно удалён')
     except:
         bot.send_message(message.from_user.id, 'Пользователя с таким тегом не существует')
+
+
+# Добавить ссылку на Google Таблицы
+def add_google_sheets(message: Message, bot: TeleBot) -> None:
+    link = message.text
+    try:
+        db = sqlite3.connect('bot/data/data.db')
+        cursor = db.cursor()
+        cursor.execute(f'INSERT INTO vars VALUES (?, ?)', ['google_sheets_link', link])
+        db.commit()
+        db.close()
+        bot.send_message(message.from_user.id, 'Ссылка успешно добавлена')
+    except Exception as e: 
+        bot.send_message(message.from_user.id, f'Произошла ошибка: {e}')
 
 
 # Узнать ID чата и топика
