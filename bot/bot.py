@@ -2,8 +2,7 @@ from os import path, getenv
 from dotenv import load_dotenv
 from telebot import TeleBot
 
-from .handlers.main import commands_handler, adding_to_chat_handler, removing_from_chat_handler
-from .handlers.keyboard import keyboard_handler
+from .handlers.main import commands_handler, adding_to_chat_handler, removing_from_chat_handler, keyboard_handler
 from .data.main_data import create_db
 
 def start_bot():
@@ -18,7 +17,6 @@ def start_bot():
 # Включение бота
 def init_bot():
     TOKEN = getenv('API_KEY')
-
     bot = TeleBot(TOKEN)
     return bot
 

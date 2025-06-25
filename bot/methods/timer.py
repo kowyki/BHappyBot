@@ -6,9 +6,6 @@ from telebot import TeleBot
 from ..classes import *
 from ..data.main_data import timer_data
 
-# from ..data.users_data import *
-# from ..classes import *
-
 # Получить дату и время
 def get_today() -> dt.datetime:
     date = urlopen('http://just-the-time.appspot.com/').read().strip().decode('utf-8')
