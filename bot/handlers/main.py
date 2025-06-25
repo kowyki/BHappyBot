@@ -14,8 +14,7 @@ def commands_handler(message: Message, bot: TeleBot) -> None:
     match message.text:
         case '/start':
             chats_markup = modify_chats_markup(message.from_user.id)
-
-            bot.send_message(message.from_user.id, 'Список комманд: \n/start — вывести список комманд \n/list — посмотреть список всех пользователей \n/add — добавить пользователя \n/remove — удалить пользователя \n/clear — очистить данные \n/timer — запустить ежедневную проверку \n/add_google_sheets — добавить ссылку на Google Таблицу с данными пользователей. В первом столбце ФИ, во втором дата рождения, в третьем телеграм-тег \n/table_sync — синхронизация данных о пользователях с облаком Google Таблиц \n/info — вывести основную информацию \n/id — вывести id чата и топика (данную команду необходимо написать в нужном чате', reply_markup=chats_markup)
+            bot.send_message(message.from_user.id, 'Выберите чат', reply_markup=chats_markup)
                   
         case '/id':
             try: 
