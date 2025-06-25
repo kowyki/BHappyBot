@@ -20,7 +20,7 @@ def chat_actions_kb():
 
 def users_actions_kb():
     users_actions = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    users_actions.add('Список', 'Добавить', 'Удалить', 'Очистить', 'Назад')
+    users_actions.add('Список', 'Добавить', 'Удалить', 'Очистить', 'Добавить список', 'Назад')
     return users_actions
 
 def timer_actions_kb():

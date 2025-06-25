@@ -195,6 +195,10 @@ def users_actions(message: Message, bot: TeleBot, chat_id: Chat_ID) -> None:
             bot.send_message(message.from_user.id, 'Пользователи очищены')
             bot.register_next_step_handler(message, users_actions, bot, chat_id)
 
+        case "Добавить список":
+            bot.send_message(message.from_user.id, 'Отправьте текстовый файл, данные в котором записаны в формате: @tag;DD.MM;ФИ на новой строке')
+            bot.register_next_step_handler(message, add_list, bot, chat_id)
+
         case "Назад":
             bot.send_message(message.from_user.id, f'Настройка чата', reply_markup=chat_actions_markup)
             bot.register_next_step_handler(message, chat_actions, bot, chat_id)
@@ -238,6 +242,32 @@ def remove_user(message: Message, bot: TeleBot, chat_id: Chat_ID) -> None:
 
     finally:
         bot.register_next_step_handler(message, users_actions, bot, chat_id)
+
+
+def add_list(message: Message, bot: TeleBot, chat_id: Chat_ID) -> None:
+    file_info = bot.get_file(message.document.file_id)
+    custom_path = 'bot/data/'
+    file_path = custom_path + message.document.file_name
+    downloaded_file = bot.download_file(file_info.file_path)
+
+    file_content = downloaded_file.decode('utf-8')
+    filtered_data = []
+    for row in file_content.split():
+        row = row.split(';')
+        filtered_data.append(tuple(row))
+
+    db = sqlite3.connect('bot/data/data.db')
+    cursor = db.cursor()
+
+    print(filtered_data)
+
+    cursor.executemany(f'INSERT INTO users_data_{chat_id.string} VALUES (?, ?, ?)', filtered_data)
+    db.commit()
+    db.close()
+
+    bot.send_message(message.from_user.id, 'Данные добавлены', reply_markup=no_kb)
+    bot.register_next_step_handler(message, add_google_sheets, bot, chat_id)
+
 
 
 def parse_from_table(chat_id: Chat_ID, sheet="Днюшки") -> None:
