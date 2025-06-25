@@ -1,54 +1,57 @@
-import os, threading
+import threading, sqlite3
 import datetime as dt
 from urllib.request import urlopen
 from telebot import TeleBot
-from dotenv import load_dotenv
 
-from ..data.users_data import *
+from ..classes import *
+from ..data.main_data import timer_data
 
-if 'CHAT_ID' not in globals():
-    load_dotenv()
-    CHAT_ID = int(os.getenv('CHAT_ID'))
-    THREAD_ID = int(os.getenv('THREAD_ID'))
-
-if 'timer_data' not in globals():
-    timer_data = []
+# from ..data.users_data import *
+# from ..classes import *
 
 # Получить дату и время
 def get_today() -> dt.datetime:
     date = urlopen('http://just-the-time.appspot.com/').read().strip().decode('utf-8')
     now_gmt = dt.datetime.strptime(date, '%Y-%m-%d %X')
-    now_mos = now_gmt.replace(hour=now_gmt.hour+3)
+    now_mos = now_gmt + dt.timedelta(hours=3)
     return now_mos
 
+
 # Запуск таймера
-def start_timer(bot: TeleBot, seconds=None) -> None:
+def start_timer(bot: TeleBot, chat_id: Chat_ID, seconds=None, send_time=(9, 0, 10, 0)) -> None:
     now = get_today()
-    time_send = now.replace(hour=9, minute=0, second=10, microsecond=0)
+    time_send = now.replace(hour=send_time[0], minute=send_time[1], second=send_time[2], microsecond=send_time[3])
 
     delta = time_send - now
-    if now.hour >= 9: delta += dt.timedelta(days=1)
+    
+    if time_send <= now: 
+        delta += dt.timedelta(days=1)
+        time_send += dt.timedelta(days=1)
 
     seconds = seconds or delta.total_seconds()
 
-    timer = threading.Timer(seconds, check_date, [bot])
-    before_activation = f'{int(seconds//3600)}ч {int((seconds - (seconds//3600)*3600)//60)}м {int(seconds%60)}с'
+    timer = threading.Timer(seconds, check_date, [bot, chat_id])
     creation_time = now.strftime('%d.%m %X')
-
-    timer_data = [timer, before_activation, creation_time]
-    timer_data[0].start()
+    activation_time = time_send.strftime('%d.%m %X')
+    remaining_time = f'{int(seconds//3600)}ч {int((seconds - (seconds//3600)*3600)//60)}м {int(seconds%60)}с'
+    
+    timer_data[chat_id.string] = [timer, creation_time, activation_time, remaining_time]
+    timer_data[chat_id.string][0].start()
 
 
 # Проверка даты
-def check_date(bot: TeleBot) -> None:
+def check_date(bot: TeleBot, chat_id: Chat_ID) -> None:
     today = get_today()
     db = sqlite3.connect('bot/data/data.db')
     cursor = db.cursor()
 
+    cursor.execute('SELECT thread_id FROM admins WHERE chat_id = ?', [chat_id.integer])
+    thread_id = str(cursor.fetchall()[0][0])
+
     # Проверка на новый месяц 
     if today.day == 1:
         msg = []
-        cursor.execute(f'SELECT * FROM users_data WHERE CAST(substr(dates, 4, 2) AS INTEGER) = {today.month}')
+        cursor.execute(f'SELECT * FROM users_data_{chat_id.string} WHERE CAST(substr(user_bday, 4, 2) AS INTEGER) = {today.month}')
         users_data = cursor.fetchall()
 
         for user in users_data:
@@ -62,25 +65,25 @@ def check_date(bot: TeleBot) -> None:
             to_send = 'Всем привет! В этом месяце родились: \n'
             for x in msg: to_send += f'- {x[0]} @{x[1]} {x[2]} числа\n'
 
-        bot.send_message(CHAT_ID, to_send, message_thread_id=THREAD_ID)
+        bot.send_message(chat_id.integer, to_send, message_thread_id=thread_id)
     
     # Проверка людей, у которых сегодня день рождения
     msg = []
-    cursor.execute(f'SELECT * FROM users_data WHERE CAST(substr(dates, 4, 2) AS INTEGER) = {today.month} AND CAST(substr(dates, 1, 2) AS INTEGER) = {today.day}')
+    cursor.execute(f'SELECT * FROM users_data_{chat_id.string} WHERE CAST(substr(user_bday, 4, 2) AS INTEGER) = {today.month} AND CAST(substr(user_bday, 1, 2) AS INTEGER) = {today.day}')
     users_data = cursor.fetchall()
     for user in users_data:
         msg.append(f'{user[2]} @{user[0]}, ')
 
     if len(msg) == 1:
         congrats_msg = f'Сегодня празднует свой день рождения {msg[0][:-2]}! 🥳'
-        bot.send_message(CHAT_ID, congrats_msg, message_thread_id=THREAD_ID)
+        bot.send_message(chat_id.integer, congrats_msg, message_thread_id=thread_id)
 
     elif len(msg) > 1:
         congrats_msg = f'Сегодня празднуют свой день рождения {"".join(msg[:-1])}'
         congrats_msg = f'{congrats_msg[:-2]} и {msg[-1][:-2]}! 🥳'
-        bot.send_message(CHAT_ID, congrats_msg, message_thread_id=THREAD_ID)
+        bot.send_message(chat_id.integer, congrats_msg, message_thread_id=thread_id)
 
     db.close()
 
     # Запуск таймера на 1 день
-    start_timer(bot, dt.timedelta(days=1).total_seconds())
+    start_timer(bot, chat_id, dt.timedelta(days=1).total_seconds())
