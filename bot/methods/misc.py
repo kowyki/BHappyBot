@@ -5,14 +5,23 @@ from telebot.types import Message
 from ..classes import *
 from ..keyboards.reply import choose_chat_kb
 
-def modify_chats_markup(admin_id: int):
+def modify_chats_markup(user_id: int, bot: TeleBot):
+    common_chats = []
     db = sqlite3.connect('bot/data/data.db')
     cursor = db.cursor()
-    cursor.execute(f'SELECT chat_title FROM admins WHERE admin_id = ?', [admin_id])
-    chat_data = [data[0] for data in cursor.fetchall()] + ['Добавить чат']
+
+    cursor.execute(f'SELECT chat_id, chat_title FROM admins')
+    chat_data = cursor.fetchall()
+
+    for chat in chat_data:
+        member = bot.get_chat_member(chat[0], user_id)
+        if member.status in ['administrator', 'creator']:
+            common_chats.append(chat[1])
+
+    common_chats.append('Добавить чат')
     db.close()
 
-    return choose_chat_kb(chat_data)
+    return choose_chat_kb(common_chats)
 
 # Узнать ID чата и топика
 def print_id(message: Message, bot: TeleBot) -> None:

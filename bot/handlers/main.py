@@ -13,7 +13,7 @@ from ..keyboards.reply import no_kb, users_actions_markup, timer_actions_markup,
 def commands_handler(message: Message, bot: TeleBot) -> None:
     match message.text:
         case '/start':
-            chats_markup = modify_chats_markup(message.from_user.id)
+            chats_markup = modify_chats_markup(message.from_user.id, bot)
             bot.send_message(message.from_user.id, 'Выберите чат', reply_markup=chats_markup)
                   
         case '/id':
@@ -46,7 +46,7 @@ def adding_to_chat_handler(message: Message, bot: TeleBot):
 
     start_timer(bot, chat_id)
 
-    chats_markup = modify_chats_markup(message.from_user.id)
+    chats_markup = modify_chats_markup(message.from_user.id, bot)
     bot.send_message(message.from_user.id, f'Чат {chat_title} успешно добавлен', reply_markup=chats_markup)
 
 
@@ -64,7 +64,7 @@ def removing_from_chat_handler(message: Message, bot: TeleBot):
     db.commit()
     db.close()
 
-    chats_markup = modify_chats_markup(message.from_user.id)
+    chats_markup = modify_chats_markup(message.from_user.id, bot)
     bot.send_message(message.from_user.id, f'Чат {chat_title} удалён', reply_markup=chats_markup)
 
 
@@ -110,7 +110,7 @@ def chat_actions(message: Message, bot: TeleBot, chat_id: Chat_ID) -> None:
             bot.register_next_step_handler(message, table_sync, bot, chat_id)
 
         case "Назад":
-            chats_markup = modify_chats_markup(message.from_user.id)
+            chats_markup = modify_chats_markup(message.from_user.id, bot)
             bot.send_message(message.from_user.id, f'Выбор чата', reply_markup=chats_markup)
             bot.register_next_step_handler(message, keyboard_handler, bot)
 
